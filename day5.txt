@@ -1,0 +1,335 @@
+条件判断函数：
+    if(条件,v1,v2):如果条件成立，则返回v1，否则返回v2
+             select if(3>2,3,2);
+             select if(3>4,3,4);
+             select prod_name,prod_price,if(prod_price>10,'昂贵','平价')  as 评价 from products;
+             select prod_name,prod_price,if(prod_price>10,'昂贵','平价')  as 评价 from products order by prod_price;
+             select prod_id,quantity,if(quantity>1,'畅销','一般') from orderitems;
+
+语法顺序
+select prod_name,prod_price,if(prod_price>10,'昂贵','平价')  as 评价 
+from products 
+where vend_id in(1003,1005) 
+order by prod_price 
+limit 6; 
+
+     ifnull(v1,v2):如果v1为空返回v2，否则返回v1
+        select vend_state,ifnull(vend_state,'HELLO') from vendors;
+   等效于
+        select vend_state,if(vend_state is not null, vend_state,'HELLO') from vendors;
+
+
+多分支：
+
+select prod_price,
+     case prod_price 
+       when 2.5 then '廉价'
+       when 10  then '平价'
+       when 13  then '还行'
+       when 35  then '贵' 
+       when 55  then '超贵' 
+      else '----'
+     end  评价
+ from products;
+
+
+select prod_price,
+     case  
+       when  prod_price<10 then '廉价'
+       when  prod_price>=10  && prod_price<20 then '平价'
+       when  prod_price>=20  && prod_price<30  then '还行'
+       when  prod_price>=30  && prod_price<40  then '贵'       
+       else '超贵' 
+     end  评价
+ from products;
+
+
+select prod_price,
+     case  
+       when  prod_price<10 then '廉价'                              
+       when  prod_price>=10  && prod_price<20 then '平价'
+       when  prod_price>=20  && prod_price<30  then '还行'
+       when  prod_price>=30  && prod_price<40  then '贵'       
+       else '超贵' 
+     end  评价
+ from products 
+ order by prod_price;
+
+
+select prod_price,
+     case  
+       when  prod_price<10 then '廉价'
+       when  prod_price>=10  and prod_price<20 then '平价'
+       when  prod_price>=20  and prod_price<30  then '还行'
+       when  prod_price>=30  and prod_price<40  then '贵'       
+       else '超贵' 
+     end  评价
+ from products 
+ order by prod_price;
+
+聚集函数：
+    max()：最大值函数
+    min()：最小值函数
+    count():计数
+    sum()：求和
+    avg()：平均数
+
+select max(prod_price) 最大,min(prod_price) 最小,count(prod_price), sum(prod_price),avg(prod_price) from products;
+select sum(prod_price)/count(prod_price),avg(prod_price) from products;
+
+   count():count(*) 求表中记录条数，不管是否包含空值
+           count(列名)：计算该列值得个数，忽略空值
+       select count(*) from vendors;
+       select count(vend_city),count(vend_state) from vendors;
+ 
+   max()、 min()、 sum() 、 avg()：具体列，忽略空值
+       select min(vend_state),max(vend_state) from vendors;
+
+
+分组查询：group by 
+   select sum(quantity*item_price) from orderitems  group by order_num;
+   select order_num,sum(quantity*item_price) from orderitems  group by order_num;
+
+group by 分组后不汇总，要汇总需要加 with rollup;
+   select order_num,sum(quantity*item_price) from orderitems  group by order_num   with rollup;
+ 
+   查看产品表中每个供应商提供的产品数：    
+    select vend_id, count(*) from products group by vend_id;
+
+分组后过滤：having
+
+     查询订单总额大于100的订单编号：
+  select order_num,sum(quantity*item_price) 订单价格 from orderitems  group by order_num having 订单价格>100;
+
+
+查询订单编号20005,20006,20007这几个订单的价格
+    select order_num,sum(quantity*item_price) 订单价格 
+    from orderitems 
+    where order_num in (20005,20006,20007) 
+    group by order_num;
+
+ 
+查询订单编号20005,20006,20007这几个订单中订单价格>100的订单, 
+    select order_num,sum(quantity*item_price) 订单价格 
+    from orderitems
+    where order_num in (20005,20006,20007) 
+    group by order_num
+    having 订单价格>100;
+
+    select order_num,sum(quantity*item_price) 订单价格 
+    from orderitems
+    where order_num in (20005,20006,20007) 
+    group by order_num
+    having 订单价格>100
+    order by 订单价格 desc
+    limit 1;
+
+
+子查询：
+
+查询提供产品safe的供应商的名字：
+
+一、select vend_id from products where prod_name ='safe';
+    select vend_name from vendors where vend_id =1003;
+二、select vend_name from vendors where vend_id in (select vend_id from products where prod_name='safe');
+
+
+查询产品价格大于平均价格的产品信息：
+select * from products where prod_price> (select  avg(prod_price) from products);
+
+查询顾客Wascals订购了哪些产品：
+select prod_id from orderitems where order_num in (select order_num from orders where cust_id in ( select cust_id  from customers where cust_name='Wascals'));
+
+select prod_id 
+from orderitems 
+where order_num in (select order_num 
+                    from orders 
+                    where cust_id in ( select cust_id  
+                                       from customers 
+                                       where cust_name='Wascals'));
+
+查询提供产品safe的供应商还提供了哪些产品：
+
+select prod_id,prod_name from products where vend_id in (select vend_id from products where prod_name='safe');
+
+细节：还……
+select prod_id,prod_name from products where vend_id in (select vend_id from products where prod_name='safe') and prod_name <> 'safe';
+
+
+
+
+
+
+
+
+mysql> select vend_state,ifnull(vend_state,'HELLO') from vendors;
++------------+----------------------------+
+| vend_state | ifnull(vend_state,'HELLO') |
++------------+----------------------------+
+| MI         | MI                         |
+| OH         | OH                         |
+| CA         | CA                         |
+| NY         | NY                         |
+| NULL       | HELLO                      |
+| NULL       | HELLO                      |
++------------+----------------------------+
+6 rows in set (0.00 sec)
+
+mysql> select vend_state,if(vend_state is not null, vend_state,'HELLO') from vendors;
++------------+------------------------------------------------+
+| vend_state | if(vend_state is not null, vend_state,'HELLO') |
++------------+------------------------------------------------+
+| MI         | MI                                             |
+| OH         | OH                                             |
+| CA         | CA                                             |
+| NY         | NY                                             |
+| NULL       | HELLO                                          |
+| NULL       | HELLO                                          |
++------------+------------------------------------------------+
+6 rows in set (0.00 sec)
+
+mysql> select order_num,sum(quantity*item_price) from orderitems  group by order_num;
++-----------+--------------------------+
+| order_num | sum(quantity*item_price) |
++-----------+--------------------------+
+|     20005 |                   149.87 |
+|     20006 |                    55.00 |
+|     20007 |                  1000.00 |
+|     20008 |                   125.00 |
+|     20009 |                    38.47 |
++-----------+--------------------------+
+5 rows in set (0.00 sec)
+
+mysql>    select order_num,sum(quantity*item_price) from orderitems  group by order_num   with rollup;
++-----------+--------------------------+
+| order_num | sum(quantity*item_price) |
++-----------+--------------------------+
+|     20005 |                   149.87 |
+|     20006 |                    55.00 |
+|     20007 |                  1000.00 |
+|     20008 |                   125.00 |
+|     20009 |                    38.47 |
+|      NULL |                  1368.34 |
++-----------+--------------------------+
+6 rows in set (0.00 sec)
+
+mysql> select quantity*item_price from orderitems;
++---------------------+
+| quantity*item_price |
++---------------------+
+|               59.90 |
+|               29.97 |
+|               50.00 |
+|               10.00 |
+|               55.00 |
+|             1000.00 |
+|              125.00 |
+|               10.00 |
+|                8.99 |
+|                4.49 |
+|               14.99 |
++---------------------+
+11 rows in set (0.00 sec)
+
+mysql> select order_num,quantity*item_price from orderitems;
++-----------+---------------------+
+| order_num | quantity*item_price |
++-----------+---------------------+
+|     20005 |               59.90 |
+|     20005 |               29.97 |
+|     20005 |               50.00 |
+|     20005 |               10.00 |
+|     20006 |               55.00 |
+|     20007 |             1000.00 |
+|     20008 |              125.00 |
+|     20009 |               10.00 |
+|     20009 |                8.99 |
+|     20009 |                4.49 |
+|     20009 |               14.99 |
++-----------+---------------------+
+11 rows in set (0.00 sec)
+
+mysql> select order_num,sum(quantity*item_price) from orderitems;
++-----------+--------------------------+
+| order_num | sum(quantity*item_price) |
++-----------+--------------------------+
+|     20005 |                  1368.34 |
++-----------+--------------------------+
+1 row in set (0.00 sec)
+
+mysql> select sum(quantity*item_price) from orderitems;
++--------------------------+
+| sum(quantity*item_price) |
++--------------------------+
+|                  1368.34 |
++--------------------------+
+1 row in set (0.00 sec)
+
+mysql> select sum(quantity*item_price) from orderitems where order_num=20005;
++--------------------------+
+| sum(quantity*item_price) |
++--------------------------+
+|                   149.87 |
++--------------------------+
+1 row in set (0.00 sec)
+
+mysql> select sum(quantity*item_price) from orderitems where order_num=20006;
++--------------------------+
+| sum(quantity*item_price) |
++--------------------------+
+|                    55.00 |
++--------------------------+
+1 row in set (0.00 sec)
+
+mysql> select sum(quantity*item_price) from orderitems where order_num=20007;
++--------------------------+
+| sum(quantity*item_price) |
++--------------------------+
+|                  1000.00 |
++--------------------------+
+1 row in set (0.00 sec)
+
+mysql> select sum(quantity*item_price) from orderitems where order_num=20008;
++--------------------------+
+| sum(quantity*item_price) |
++--------------------------+
+|                   125.00 |
++--------------------------+
+1 row in set (0.00 sec)
+
+mysql> select sum(quantity*item_price) from orderitems  group by order_num;
++--------------------------+
+| sum(quantity*item_price) |
++--------------------------+
+|                   149.87 |
+|                    55.00 |
+|                  1000.00 |
+|                   125.00 |
+|                    38.47 |
++--------------------------+
+5 rows in set (0.00 sec)
+
+mysql> select order_num,sum(quantity*item_price) from orderitems  group by order_num;
++-----------+--------------------------+
+| order_num | sum(quantity*item_price) |
++-----------+--------------------------+
+|     20005 |                   149.87 |
+|     20006 |                    55.00 |
+|     20007 |                  1000.00 |
+|     20008 |                   125.00 |
+|     20009 |                    38.47 |
++-----------+--------------------------+
+5 rows in set (0.00 sec)
+
+mysql>    select order_num,sum(quantity*item_price) from orderitems  group by order_num   with rollup;
++-----------+--------------------------+
+| order_num | sum(quantity*item_price) |
++-----------+--------------------------+
+|     20005 |                   149.87 |
+|     20006 |                    55.00 |
+|     20007 |                  1000.00 |
+|     20008 |                   125.00 |
+|     20009 |                    38.47 |
+|      NULL |                  1368.34 |
++-----------+--------------------------+
+6 rows in set (0.00 sec)

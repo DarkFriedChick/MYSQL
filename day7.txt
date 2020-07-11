@@ -1,0 +1,232 @@
+自联结：
+    查询提供产品‘safe’的供应商一共提供了哪些产品
+    select prod_id,prod_name
+    from products
+    where vend_id in (select vend_id from products where prod_name='safe');
+
+    select p1.prod_id,p1.prod_name
+    from products p1,products p2 
+    where p1.vend_id=p2.vend_id
+    and p2.prod_name='safe';
+
+自然联结
+内联结
+外联结：左外联结、右外联结
+
+组合查询：union 自动去重复
+          union all 不去重复
+
+创建表：
+    create table [if not exists] 表名(列名1 数据类型 约束条件,……,列名N 数据类型 约束条件);
+    
+    复制表结构： create table if not exists 表名 like 数据库名.表名;
+
+DML：insert、delete、update
+DQL: select
+DDL：create、drop、alter、truncate
+
+插入数据：insert
+     insert into 表名(列名1,列名2,…,列名N) values(列值1,列值2,…,列值N),(列值1,列值2,…,列值N),…,(列值1,列值2,…,列值N);
+
+      如果插入值得个数与表的列数相同，且顺序与表结构一致，则前面可以省略;
+    
+     插入查询的数据：
+            insert into 表名(列名1,列名2,…,列名N) select 列名1,列名2,…,列名N from ……;
+
+删除数据：delete
+      delete from 表名 where 子句;
+     where子句，如果省略，清空整张表；
+       truncate 表名;
+
+更新数据：update
+      update 表名 set 列名1=列值1, 列名2=列值2,…  where 子句;
+     
+    where子句，如果省略，更新表内所有记录；
+
+删除表：drop
+    drop table [ if exists] 表名;
+
+修改表：alter
+    修改表名：
+        alter table 表名 rename as|to 新表名;
+        rename  table 表名 to 新表名;
+
+    增加列：
+        alter table 表名 add [column] 列名 数据类型 约束条件  [位置];
+        位置：默认最后一列，first 第一列，after 某个列名 表示放在此列后面
+
+    删除列：
+         alter table 表名 drop [column] 列名;
+
+================================================================================================================
+
+    修改列：
+        修改列的数据类型和约束： modify
+         alter table 表名 modify 列名 新的数据类型和约束;
+             alter table students02 modify age int not null comment '年龄';
+
+        修改列名和数据类型约束：change     
+         alter table 表名 change 原列名 新列名 新的数据类型和约束;
+             alter table students02 change age stu_age int default 20 comment '学生年龄';
+               insert into students02(stu_id,stu_name,stu_sex) values(1007,'Davi','M');
+
+            alter table students02 change stu_age stu_age int  comment '学生年龄';
+              insert into students02(stu_id,stu_name,stu_sex) values(1008,'David','M');
+
+索引：index 
+  普通索引 index ：提高查询速度
+  唯一索引 unique:
+  主键索引 primary key：
+
+查看表的索引：show index from 表名;   
+              show index from tt01;
+显示创建表的语句：show create table 表名; 
+                  show create table tt01;   可以看到表的索引
+
+普通索引
+  创建索引：
+     一、创建表示，在所有列后面直接申明索引：index 索引名(列名1,列名2,…); 
+         create table tt01(t_id int not null,t_name char(30),t_desc char(40), index i_tt01(t_id)); 
+
+     二、先创建表，通过修改表来增加索引
+         alter table 表名 add index  索引名(列名1,列名2,…); 
+         alter table tt01 add index  i_t02(t_id,t_name); 
+         alter table tt01 add index  i_t03(t_desc); 
+
+     三、先创建表，直接创建索引
+         create index 索引名 on 表名(列名1,列名2,…); 
+         create index i_t04 on tt01(t_id);
+
+  删除索引：
+      一、drop index 索引名 on 表名;
+         drop index i_tt01 on tt01;
+      二、alter table 表名 drop index 索引名;
+         alter table tt01 drop index i_t02;
+
+唯一索引：
+  创建唯一索引
+     一、创建表时：
+          a、直接在列的约束中加上唯一 (此时索引是单列，不是组合索引)
+           create table tt02(t_id int not null unique,t_name char(30),t_desc char(40));
+            可以通过show create table tt02;查看索引名;
+
+          b、在所有列后面直接申明唯一索引：unique 索引名(列名1,列名2,…); 
+            create table tt03(t_id int not null,t_name char(30),t_desc char(40),unique ui01(t_id,t_name));
+
+     二、先创建表，通过修改表来增加唯一索引
+            alter table 表名 add unique index  索引名(列名1,列名2,…);       
+            alter table tt02 add unique index  ui_01(t_id,t_name);  
+
+     三、先创建表，直接创建唯一索引   
+            create unique index 索引名 on 表名(列名1,列名2,…);    
+             create unique index ui_02 on tt02(t_desc);    
+
+     四、 非组合唯一索引(单列)，还可以通过修改列的约束来增加唯一索引
+           alter table 表名 modify 列名  数据类型 约束;
+              alter table tt02 modify t_name  char(30) unique;
+
+            alter table 表名 change 列名 列名  数据类型 约束;
+              alter table tt02 change t_name t_name  char(30)  unique; 
+
+  删除唯一索引：
+      一、drop index 索引名 on 表名;
+         drop index  t_id on tt02;
+      二、alter table 表名 drop index 索引名;
+         alter table tt02 drop index ui_02;
+
+主键：primary key 非空唯一
+
+ 创建主键：
+   一、创建表时：
+          a、直接在列的约束中加上主键 (此时主键是单列，不是组合主键)
+           create table tt04(t_id int not null primary key,t_name char(30),t_desc char(40));
+            可以通过show create table tt04;查看索引名;
+
+          b、在所有列后面直接申明主键：primary key(列名1,列名2,…); 
+            create table tt05(t_id int not null,t_name char(30),t_desc char(40),primary key(t_id,t_name));
+
+   二、先创建表，通过修改表来增加主键
+          alter table 表名 add [constraint] primary key(列名1,列名2,…);   
+          alter table tt04 add  primary key(t_name);   
+
+          alter table tt04 add constraint primary key(t_name);  
+
+   三、 非组合主键(单列)，还可以通过修改列的约束来增加主键
+
+            alter table 表名 modify 列名  数据类型 约束;
+              alter table tt04 modify t_name  char(30)  primary key;
+            alter table 表名 change 列名 列名  数据类型 约束;
+              alter table tt04 change t_name t_name  char(30)  primary key;                        
+
+ 删除主键：
+        alter table 表名 drop primary key;
+        alter table tt04 drop primary key;
+
+外键：foreign key
+
+create table students(stu_id int primary key, stu_name char(30) not null, stu_sex enum('F','M'),age int);
+mysql> select * from students;
++--------+-----------+---------+------+
+| stu_id | stu_name  | stu_sex | age  |
++--------+-----------+---------+------+
+|   1001 | Mary      | F       |   18 |
+|   1002 | Lucy      | F       |   18 |
+|   1003 | Hanmeimei | F       |   18 |
+|   1004 | Liutao    | M       |   18 |
+|   1005 | Wangbing  | F       |   18 |
+|   1006 | 张bing    | F       | NULL |
++--------+-----------+---------+------+
+6 rows in set (0.00 sec)
+
+create table courses(cour_id int primary key,cour_name char(30) not null);
+insert into courses values(101,'MySQL'),(102,'Java'),(103,'Python'),(104,'Linux');
+
+create table sc(stu_id int,cour_id int,primary key(stu_id,cour_id));
+insert into sc values(1001,101); 成功
+insert into sc values(1008,101); 成功
+
+alter table sc add constraint fk_sc_students foreign key(stu_id) references students(stu_id);  失败,因为sc,stu_id=1008,与外键约束冲突
+ delete from sc where stu_id=1008;
+alter table sc add constraint fk_sc_students foreign key(stu_id) references students(stu_id);  成功
+ insert into sc values(1008,101);  失败
+alter table sc add constraint fk_sc_courses foreign key(cour_id) references courses(cour_id);  成功
+
+创建外键：
+    一、创建表时，在所有列后面直接申明外键：foreign key(列名) references 关联表(列名); 
+     create table sc01(stu_id int,cour_id int,foreign key(stu_id) references students(stu_id));
+         可以通过show create table sc01;查看外键名  
+    二、创建表后，修改表增加外键
+      alter table 表名 add constraint 外键名 foreign key(列名) references 关联表(列名); 
+      alter table sc01 add constraint fk_sc01_courses foreign key(cour_id) references courses(cour_id);
+
+删除外键：
+    alter table 表名 drop foreign key 外键名;
+    alter table sc01 drop foreign key fk_sc01_courses;
+
+注：外键关联表的那一列必须是索引(普通、唯一、主键);
+
+
+视图：
+
+创建视图：
+
+   create view 视图名 as select 语句;
+   create view prod_01 as select prod_id ,prod_name,prod_desc from products;
+   create view prod_vend as select prod_id,prod_name,p.vend_id pid,v.vend_id vid,vend_name from products p,vendors v where p.vend_id=v.vend_id;    
+
+主要作用：语句重用
+          数据保护，安全性   
+
+显示创建视图的语句：show create view 视图名;
+              show create view prod_vend;
+删除视图：drop view 视图名;
+          drop view prod_01;
+
+视图的增、删、改影响是其基表的数据，受到基表约束的约束。
+
+
+
+
+
+    
+

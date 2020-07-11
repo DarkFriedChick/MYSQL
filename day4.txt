@@ -1,0 +1,355 @@
+过滤查询：where 
+   =，!=  <>, >,>=, <,<=
+   区间查询 between A and B  包含边界    取反：not between A and B 
+   多条件查询： AND 同时满足
+                OR  满足其中一个条件
+              AND 和 OR 联用要注意优先级
+   空值查询： is null     取反 is not null
+   in 操作符   取反：not in
+   模糊查询：like  %：匹配任意个字符  _:匹配一个字符
+   正则表达式：regexp  列内匹配
+               ^: 开头
+               $: 结尾
+               .: 匹配一个字符
+              \\: 转义
+               |: 或者
+              []: 取其中一个字符
+                 [0123456789],[0-9]:表示任一数字
+              [^]:不取其中的字符
+    
+               *：匹配前面字符任意次  0-n
+               ?: 匹配前面字符最多1次 0或1
+               +: 匹配前面字符至少1次 1-n
+              {m}：匹配前面字符m次
+              {m,}：匹配前面字符至少m次 
+              {m,n}：匹配前面字符m到n次 
+
+
+字符串函数：
+      concat(s,s1,s2):字符串拼接
+      char_length(s) ：返回字符串的字符数            1个中文=1个字符
+      length(s):       返回字符串的长度(所占字节数)  1个中文=2|3个字符 
+      left(s,n):       返回前n个字符
+      right(s,n):      返回后n个字符
+      substring(s,m,n):返回字符串s从第m个字符开始的n个字符
+      ltrim(s):        去掉字符串左边的空格           select '   abc',ltrim('   abc') from dual;
+      rtrim(s):        去掉字符串右边的空格  
+                   select '   abc     ',length(ltrim('   abc     ')),length(rtrim('   abc     ')) from dual;
+      trim(s) :        去掉字符串两边边的空格    
+                   select '   abc     ',length(trim('   abc     ')) from dual;
+
+      trim(s1 from s) :去掉字符串s中两边的字符串s1
+                    select trim('a' from 'aaa*a****DSaaaG***a*aa') from dual;
+                    select trim('aa' from 'aaa*a****DSaaaG***a*aaaa') from dual;
+ 
+      replace(s,s1,s2):用s2替换s中s1
+                     select replace('dasnmdsfkhsdalh','s','------') from dual;
+                     select replace('dasnmdasfkhsadaslh','as',' ') from dual;
+                     select prod_name,replace(prod_name, 'an','007') from products;
+
+      insert(s,m,n,s1):将字符串s中第m个字符开始的n个字符换成字符串s2
+                    select prod_name,insert(prod_name, 3,1,'***') from products;
+                    select prod_name,insert(prod_name, 3,4,'*') from products;
+      lpad(s,n,s1):用s1左填充s，使得总长度为n
+                     select concat(lpad(prod_name,15,' '),'的价格为',prod_price,'.')  as 评价 from products;
+                     select concat(lpad(prod_name,10,' '),'的价格为',prod_price,'.')  as 评价 from products;  
+ 
+      rpad(s,n,s1):用s1右填充s，使得总长度为n
+                      select concat(rpad(prod_name,15,'---'),'的价格为',prod_price,'.')  as 评价 from products;
+
+      locate(s1,s):返回字符串s中s1的开始的位置               
+                    select locate('sa', 'fdhkdfkhlsajlgshg');     找不到返回0；
+                    select locate('sad', 'fdhkdfkhlsajlgshg');
+      position(s1 in s):返回字符串s中s1的开始的位置    
+                     select position('sad' in 'sddhkdfkhlsdjlgshg');
+      instr(s,s1):返回字符串s中s1的开始的位置     
+                      select instr( 'sddhkdfkhlsdjlgshg', 'h');
+      strcmp(s1,s2):比较字符串s1和s2 
+                     如果s1比s2大，返回一个大于0的值，此系统返回的是 1 
+                     如果s1比s2小，返回一个小于0的值，此系统返回的是 -1
+                     如果s1与s2相同，返回0                     
+                     
+      soundex(s):返回字符串的发音
+
+
+
+
+日期函数：
+     current_date(),curdate():返回当前的日期
+                    select current_date(),curdate();
+     current_time(),curtime():返回当前的时间
+                     select  current_time(),curtime();
+     now(),sysdate(),localtime():返回当前的日期和时间
+                      select now(),sysdate(),localtime();
+
+     year(date):  返回日期中的年份
+     month(date): 返回日期中的月份
+     monthname(date):返回日期中的月份英文名
+     day(date)：返回日期中的月份日
+
+     dayofmonth(date):返回日期是所在月第多少天
+     dayofyear(date):返回日期是所在年第多少天  
+     dayofweek(date)：返回日期是所在周第多少天     
+ 
+     hour(time):     返回time中的小时数
+     minute(time):   返回time中的分钟数  
+     second(time):   返回time中的秒数  
+ 
+     addtime(time,n):返回当前时间加上n秒后的时间       n: [-59, 59]  
+
+     adddate(date,n)：返回日期date加上n天后的日期
+                   select adddate('2020-02-14',100);
+     datediff(d1,d2): 返回d1-d2的值 
+                   select datediff('2020-06-19','1998-07-07'); 
+
+     extract(type from date|time):从指定的date|time中返回type的值
+               select extract(year from now());
+               select extract(hour from '15:23:34');
+
+     date_format(date,F):按照指定格式F返回日期date
+
+
+
+数学函数：
+    +、-、*、/
+    mod(num,n): 返回num除以n的余数         select mod(8,3);
+    sqrt(num) : 返回num算术平方根  num>=0  select sqrt(2);
+    pow(num,n)：返回num的n次方             select pow(-2,3);
+    pi():   圆周率
+    sin():  正弦
+    cos():  余弦
+    tan():  正切
+    rand(): 随机数   0~1之间
+    abs(num)：绝对值     select abs(10),abs(-4),abs(0);
+    round(): 四舍五入函数
+         round(num):四舍五入到整数
+                    select round(123.4999),round(432.500001),round(-22.4999),round(-3.5000);
+         round(num,n):四舍五入保留n位小数
+                     select round(123.9499,1),round(432.5551,2),round(-22.4999,1),round(-3.5000,3);
+                     select round(1235.9499,-1),round(5432.5551,-2);
+
+   truncate(num,n):截断函数  去尾法保留n位小数
+              select truncate(123.9499,1),truncate(432.5551,2),truncate(-22.4999,1),truncate(-3.5099,3);
+               select truncate(123.9499,-1),truncate(432.5551,-2),truncate(-22.4999,-1);
+
+   ceil(num): 向上取整
+               select ceil(1.000001),ceil(-1.99999),ceil(11.99);
+
+   floor(num)：向下取整
+               select floor(1.000001),floor(-1.99999),floor(11.99);
+
+
+加密函数：
+    password(s):加密函数
+    MD5(s)：加密函数             加密规则不一样
+
+mysql> select password('root'),md5('root');
++-------------------------------------------+----------------------------------+
+| password('root')                          | md5('root')                      |
++-------------------------------------------+----------------------------------+
+| *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | 63a9f0ea7bb98050796b649e85481845 |
++-------------------------------------------+----------------------------------+
+1 row in set (0.00 sec)
+  
+格式化函数：
+    ASCII(s):返回字符串首字符ASCII吗值
+    bin(x):  二进制编码
+    oct(x):  八进制编码
+    hex(x):  十六进制编码
+
+系统信息函数：
+    version():返回数据库管理系统的版本号      select version();
+    connection_id():返回服务器的连接数        select connection_id();
+    database(),schema()：返回当前的数据库名   select database();
+    user(),system_user(),current_user():返回当前的用户 
+                                              select  user(),system_user(),current_user();
+       
+    
+mysql> select date_format('2020-01-31', '%Y/%M/%D');
++---------------------------------------+
+| date_format('2020-01-31', '%Y/%M/%D') |
++---------------------------------------+
+| 2020/January/31st                     |
++---------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select date_format('2020-01-31', '%y/%m/%d');
++---------------------------------------+
+| date_format('2020-01-31', '%y/%m/%d') |
++---------------------------------------+
+| 20/01/31                              |
++---------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select date_format('2020-01-31', '%Y:%m:%d');
++---------------------------------------+
+| date_format('2020-01-31', '%Y:%m:%d') |
++---------------------------------------+
+| 2020:01:31                            |
++---------------------------------------+
+1 row in set (0.00 sec)
+
+mysql> select date_format('2020-01-31', '%m:%d-%Y');
++---------------------------------------+
+| date_format('2020-01-31', '%m:%d-%Y') |
++---------------------------------------+
+| 01:31-2020                            |
++---------------------------------------+
+1 row in set (0.00 sec)
+
+
+mysql> select year(now()) 年,month(now()) 月,dayofmonth(now()) 日 from dual;
++------+------+------+
+| 年   | 月   | 日   |
++------+------+------+
+| 2020 |    6 |   19 |
++------+------+------+
+1 row in set (0.00 sec)
+
+mysql> select year(now()) 年,month(now()) 月,day(now()) 日 from dual;
++------+------+------+
+| 年   | 月   | 日   |
++------+------+------+
+| 2020 |    6 |   19 |
++------+------+------+
+1 row in set (0.00 sec)
+
+          
+mysql> select * from products  where prod_name  regexp '[^0-9]';
++---------+---------+----------------+------------+----------------------------------------------------------------+
+| prod_id | vend_id | prod_name      | prod_price | prod_desc                                                      |
++---------+---------+----------------+------------+----------------------------------------------------------------+
+| ANV01   |    1001 | .5 ton anvil   |       5.99 | .5 ton anvil, black, complete with handy hook                  |
+| ANV02   |    1001 | 1 ton anvil    |       9.99 | 1 ton anvil, black, complete with handy hook and carrying case |
+| ANV03   |    1001 | 2 ton anvil    |      14.99 | 2 ton anvil, black, complete with handy hook and carrying case |
+| DTNTR   |    1003 | Detonator      |      13.00 | Detonator (plunger powered), fuses not included                |
+| FB      |    1003 | Bird seed      |      10.00 | Large bag (suitable for road runners)                          |
+| FC      |    1003 | Carrots        |       2.50 | Carrots (rabbit hunting season only)                           |
+| FU1     |    1002 | Fuses          |       3.42 | 1 dozen, extra long                                            |
+| JP1000  |    1005 | JetPack 1000   |      35.00 | JetPack 1000, intended for single use                          |
+| JP2000  |    1005 | JetPack 2000   |      55.00 | JetPack 2000, multi-use                                        |
+| OL1     |    1002 | Oil can        |       8.99 | Oil can, red                                                   |
+| SAFE    |    1003 | Safe           |      50.00 | Safe with combination lock                                     |
+| SLING   |    1003 | Sling          |       4.49 | Sling, one size fits all                                       |
+| TNT1    |    1003 | TNT (1 stick)  |       2.50 | TNT, red, single stick                                         |
+| TNT2    |    1003 | TNT (5 sticks) |      10.00 | TNT, red, pack of 10 sticks                                    |
++---------+---------+----------------+------------+----------------------------------------------------------------+
+14 rows in set (0.00 sec)
+
+mysql> select * from products  where vend_id  regexp '[^0-9]';
+Empty set (0.00 sec)
+
+mysql> select * from products  where prod_name  regexp '[0-9]';
++---------+---------+----------------+------------+----------------------------------------------------------------+
+| prod_id | vend_id | prod_name      | prod_price | prod_desc                                                      |
++---------+---------+----------------+------------+----------------------------------------------------------------+
+| ANV01   |    1001 | .5 ton anvil   |       5.99 | .5 ton anvil, black, complete with handy hook                  |
+| ANV02   |    1001 | 1 ton anvil    |       9.99 | 1 ton anvil, black, complete with handy hook and carrying case |
+| ANV03   |    1001 | 2 ton anvil    |      14.99 | 2 ton anvil, black, complete with handy hook and carrying case |
+| JP1000  |    1005 | JetPack 1000   |      35.00 | JetPack 1000, intended for single use                          |
+| JP2000  |    1005 | JetPack 2000   |      55.00 | JetPack 2000, multi-use                                        |
+| TNT1    |    1003 | TNT (1 stick)  |       2.50 | TNT, red, single stick                                         |
+| TNT2    |    1003 | TNT (5 sticks) |      10.00 | TNT, red, pack of 10 sticks                                    |
++---------+---------+----------------+------------+----------------------------------------------------------------+
+7 rows in set (0.00 sec)
+
+mysql> select * from products  where prod_name not regexp '[0-9]';
++---------+---------+-----------+------------+-------------------------------------------------+
+| prod_id | vend_id | prod_name | prod_price | prod_desc                                       |
++---------+---------+-----------+------------+-------------------------------------------------+
+| DTNTR   |    1003 | Detonator |      13.00 | Detonator (plunger powered), fuses not included |
+| FB      |    1003 | Bird seed |      10.00 | Large bag (suitable for road runners)           |
+| FC      |    1003 | Carrots   |       2.50 | Carrots (rabbit hunting season only)            |
+| FU1     |    1002 | Fuses     |       3.42 | 1 dozen, extra long                             |
+| OL1     |    1002 | Oil can   |       8.99 | Oil can, red                                    |
+| SAFE    |    1003 | Safe      |      50.00 | Safe with combination lock                      |
+| SLING   |    1003 | Sling     |       4.49 | Sling, one size fits all                        |
++---------+---------+-----------+------------+-------------------------------------------------+
+7 rows in set (0.00 sec)
+
+mysql> select strcmp('china','china');
++-------------------------+
+| strcmp('china','china') |
++-------------------------+
+|                       0 |
++-------------------------+
+1 row in set (0.00 sec)
+
+
+mysql> select strcmp('chinese','china');
++---------------------------+
+| strcmp('chinese','china') |
++---------------------------+
+|                         1 |
++---------------------------+
+1 row in set (0.00 sec)
+
+mysql> select strcmp('china','chinb');
++-------------------------+
+| strcmp('china','chinb') |
++-------------------------+
+|                      -1 |
++-------------------------+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where soundex('lily')=soundex('lilee');
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where soundex('lily')=soundex('lili');
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where soundex('lily')=soundex('leli');
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where soundex('lily')=soundex('lemei');
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where soundex('lily')=soundex('mary');
+Empty set (0.00 sec)
+
+mysql> select round(123.4999),round(432.500001),round(-22.4999),round(-3.5000);
++-----------------+-------------------+-----------------+----------------+
+| round(123.4999) | round(432.500001) | round(-22.4999) | round(-3.5000) |
++-----------------+-------------------+-----------------+----------------+
+|             123 |               433 |             -22 |             -4 |
++-----------------+-------------------+-----------------+----------------+
+1 row in set (0.00 sec)
+
+mysql> select round(123.9499,1),round(432.5551,2),round(-22.4999,1),round(-3.5000,3);
++-------------------+-------------------+-------------------+------------------+
+| round(123.9499,1) | round(432.5551,2) | round(-22.4999,1) | round(-3.5000,3) |
++-------------------+-------------------+-------------------+------------------+
+|             123.9 |            432.56 |             -22.5 |           -3.500 |
++-------------------+-------------------+-------------------+------------------+
+1 row in set (0.00 sec)
+
+mysql> select round(1235.9499,-1),round(5432.5551,-2);
++---------------------+---------------------+
+| round(1235.9499,-1) | round(5432.5551,-2) |
++---------------------+---------------------+
+|                1240 |                5400 |
++---------------------+---------------------+
+1 row in set (0.00 sec)
+
+mysql> select  user(),system_user(),current_user();
++----------------+----------------+----------------+
+| user()         | system_user()  | current_user() |
++----------------+----------------+----------------+
+| root@localhost | root@localhost | root@localhost |
++----------------+----------------+----------------+
+1 row in set (0.00 sec)

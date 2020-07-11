@@ -1,0 +1,362 @@
+SQL(Structured Query Language)：结构化查询语音
+DDL(Data Definition Language)： 数据定义语音  create、drop、alter
+DML(Data Management Language)： 数据操纵语音  insert、delete、update、select(DQL)
+DCL(Data Control Language)：    数据控制语音  grant、revoke
+TCL(Transaction Control Language)： 事务控制语言 transaction、commit、rollback、savepoint   
+
+查询表内数据：select
+    select *|列名(单|复) from 表名；
+
+排序：order by 默认升序(asc),降序 (desc)
+               就近原则
+
+分页(限制查询)： limit 
+                limit n：前n条记录
+                limit m,n：从第m+1条记录开始的n条记录
+
+order by 和  limit 联用可以查询最高最低的n条记录，或者指定的第几条到第几条
+
+去重复：distinct
+
+取别名：as 可省
+
+完全限定的表名，列名：  A.a
+
+过滤查询：where
+    =，!= <>, > ,>= ,<,<=   注：字符串要加单引号
+ 
+    区间查询：between and  包含边界，  取反 not between and
+    空值查询：is null       取反 ：is not null
+
+ =========================================================
+
+查询表内数据：select
+    模糊查询：like  %：匹配任意个字符  _:匹配一个字符
+
+显示用户Wascals的信息：
+   select * from customers where cust_name='Wascals';
+       
+查询名字中包含字符u的顾客信息：
+   select * from customers where cust_name  like '%u%';
+
+第二个字符为o的顾客信息：
+   select * from customers where cust_name  like '_o%';
+
+多条件查询：
+     AND ：同时满足所有条件
+     OR  ：满足其中一个条
+
+  查询供应商1003提供的价格大于10的产品信息：   
+   select * from products where vend_id=1003 AND prod_price>10;
+
+   prod_price between 10 and 35; 等效于 prod_price>=10 and prod_price<=35;
+      select * from products where prod_price between 10 and 35;
+      select * from products where prod_price>=10 and prod_price<=35;
+
+  查询供应商1003和1005提供的产品信息：
+   select * from products where vend_id=1003  OR vend_id=1005;
+
+   select * from products where vend_id=1003  OR vend_id=1005 order by vend_id;
+
+
+  查询供应商1003和1005提供的价格大于40的产品信息：
+
+   select * from products where vend_id=1003  OR vend_id=1005 and prod_price>40  order by vend_id;
+
+  没有达到效果，因为1003提供的价格<=40的产品也显示了？？
+  因为 and和or 是and优先 也就是 vend_id=1003  OR vend_id=1005 and prod_price>40  等效于
+                              vend_id=1003  OR (vend_id=1005 and prod_price>40)
+
+  所以为了达到题目效果：
+     select * from products where (vend_id=1003  OR vend_id=1005) and prod_price>40  order by vend_id;
+     select * from products where vend_id=1003 and prod_price>40  OR vend_id=1005 and prod_price>40  order by vend_id;
+
+  查询供应商1002，1003和1005提供的产品信息：
+     select * from products where vend_id=1002  or vend_id=1003  OR vend_id=1005;
+
+in操作符：
+    select * from products where vend_id in (1002,1003,1005);
+    取反 not in
+
+   select * from products where vend_id=1003;
+   select * from products where vend_id in (1003);
+
+查询产品名中包含字符‘ac’的产品信息
+select * from products where prod_name like '%ac%';
+
+查询产品名中包含字符a和c的产品信息:
+select * from products where prod_name like '%a%' and  prod_name like '%c%';
+select * from products where prod_name like '%a%c%'  or  prod_name like '%c%a%';
+
+dual：内置空表
+
+mysql> select '正确' from dual where 1=0;
+Empty set (0.00 sec)
+
+mysql> select '正确' from dual where 1=1;
++--------+
+| 正确   |
++--------+
+| 正确   |
++--------+
+1 row in set (0.00 sec)
+
+regexp：
+
+ 查询产品名中包含字符‘ac’的产品信息
+  select * from products where prod_name like '%ac%';
+
+  select * from products where prod_name regexp 'ac';   注：regexp列内匹配
+
+   |：表示或者
+     查询产品名中包含字符‘ac’或‘an’的产品信息
+       select * from products where prod_name regexp 'ac' or prod_name regexp 'an';
+       select * from products where prod_name regexp 'ac|an';
+
+   ^: 表示开始     
+       以S开头 select * from products where prod_name regexp '^s';      like 's%';
+
+   $：表示结尾
+       以l结尾   select * from products where prod_name regexp 'l$';
+
+   .: 匹配一个字符
+       第二个字符为a    select * from products where prod_name regexp '^.a';
+       倒数第三个字符为v     select * from products where prod_name regexp 'v..$';
+
+   \\:表示转义 把具有特殊意义的字符转换为普通字符
+        以.开头     select * from products where prod_name regexp '^\\.';
+  
+   []：表示取其中的任一个字符
+
+     名字中包含数字的产品信息
+        select * from products where prod_name regexp '0|1|2|3|4|5|6|7|8|9';
+        select * from products where prod_name regexp '[0123456789]';
+        select * from products where prod_name regexp '[0-9]';
+     [0123456789]、[0-9] ：表示任意一个数字
+     [a-zA-Z] ：表示任意字母   
+
+     [^]:表示不取里面的值
+         [^0-9]:非数字
+         select 1 from dual where '9628623489' regexp '[^0-9]';
+
+     ?: 表示匹配前面字符0或1次
+     +: 表示匹配前面字符至少1次
+     *：表示匹配前面字符任意次
+     {m}:匹配前面字符m次        必须为连续的
+     {m,}:匹配前面字符至少m次     
+     {m,n}:匹配前面字符m到n次     
+
+
+手机号：1**********         初步判断   '^1[0-9]{10}$'
+邮箱：w**@***.com           初步判断   '^[0-9a-zA-Z_]+@[0-9a-zA-Z_]{2,15}\\.[a-zA-Z_]{2,3}$'
+
+字符串函数：
+   concat(s1,s2,s3):字符串拼接 
+         select concat(prod_name,'的价格为',prod_price,'.')  as 评价 from products;
+   char_length(s)：字符串的字符数    select char_length('Hello world , 你好!');
+   length(s)：字符串的长度           select length('Hello world , 你好!');      1个中文=2|3个字符
+   upper(s)：大写
+   lower(s): 小写
+                  select prod_name, upper(prod_name),lower(prod_name) from products;
+   left(s,n): 返回前n个字符
+   right(s,n): 返回后n个字符
+                  select prod_name, left(prod_name,3),right(prod_name,4) from products;
+ 
+   substring(s,m,n):返回字符串s第m个字符开始的n个字符 
+                 select substring('1234567890',4,2);
+
+
+
+
+mysql> select 1 from dual where 'a'  regexp '^a?$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where ''  regexp '^a?$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aa'  regexp '^a?$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where 'aa'  regexp '^a+$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'a'  regexp '^a+$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where ''  regexp '^a+$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where ''  regexp '^a*$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'a'  regexp '^a*$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aa'  regexp '^a*$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaaaaaaaaaaaaaaaaa'  regexp '^a*$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaa'  regexp '^a{4}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aaa'  regexp '^a{4}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaaa'  regexp '^a{4}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaaa'  regexp '^a{4,}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaa'  regexp '^a{4,}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aaa'  regexp '^a{4,}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  regexp '^a{4,}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  regexp '^a{4,8}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaaaaaa'  regexp '^a{4,8}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'aaaaaaa'  regexp '^a{4,8}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where '354'  regexp '^[0-9]{4,8}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where '3504'  regexp '^[0-9]{4,8}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where '350434349'  regexp '^[0-9]{4,8}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where '13776042496'  regexp   '^1[0-9]{10}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'weiyan0930@163.com'  regexp    '^[0-9a-zA-Z_]+@[0-9a-zA-Z_]{2,15}\\.[a-zA-Z_]{2,3}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where 'weiyan0930163.com'  regexp    '^[0-9a-zA-Z_]+@[0-9a-zA-Z_]{2,15}\\.[a-zA-Z_]{2,3}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where 'weiyan0930@163com'  regexp    '^[0-9a-zA-Z_]+@[0-9a-zA-Z_]{2,15}\\.[a-zA-Z_]{2,3}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where '327667895@qq.com'  regexp    '^[0-9a-zA-Z_]+@[0-9a-zA-Z_]{2,15}\\.[a-zA-Z_]{2,3}$';
++---+
+| 1 |
++---+
+| 1 |
++---+
+1 row in set (0.00 sec)
+
+mysql> select 1 from dual where '@qq.com'  regexp    '^[0-9a-zA-Z_]+@[0-9a-zA-Z_]{2,15}\\.[a-zA-Z_]{2,3}$';
+Empty set (0.00 sec)
+
+mysql> select 1 from dual where '327667895@qq.'  regexp    '^[0-9a-zA-Z_]+@[0-9a-zA-Z_]{2,15}\\.[a-zA-Z_]{2,3}$';
+Empty set (0.00 sec)
+
+
+
+
+
+
+
+
+
+
+
+
+

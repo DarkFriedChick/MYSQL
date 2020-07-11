@@ -1,0 +1,186 @@
+数据库管理系统分类：
+一、关系型数据库
+    1、基于共享文件的数据库：Access、Filemaker
+    2、基于客户机—服务器的数据库： MySQL （默认端口号：3306） 、 Oracle（端口号：1521） 、Microsoft SQL Server（端口号：1433）
+二、非关系型数据库 Redis、MongoDB、CouchDB
+
+
+DBMS （DataBase Management System）数据库管理系统
+Data 数据
+DB  DataBase 数据库
+table 表
+datatype 数据类型
+column 列、字段
+row 行
+primary key 主键  一列（或一组列），其值能够唯一区分表中每个行。主键列的值不能重复、不为null。
+
+
+SQL： Structured Query Language 结构化查询语音
+
+安装MySQL：
+以D盘为例
+1、以管理员身份运行cmd
+  cmd 的路径 C:\Windows\System32 找到cmd.exe 右击“以管理员身份运行”
+2、d:
+3、cd  D:\MySQL5.6\bin
+4、 mysqld install
+5、net start mysql
+6、可以连接数据库管理系统：mysql -uroot -proot 
+
+配置一下环境变量
+没有配置前：mysql不是内部命令，要连接必须切换到bin的路径下
+配置：
+ 1、右击“我的电脑” 
+ 2、点击“属性”
+ 3、点击“高级系统设置”
+ 4、点击“高级”
+ 5、点击“环境变量”
+ 6、在“系统变量”中找到“path”
+ 7、点击“编辑”
+ 8、在路径最后加上“;D:\MySQL5.6\bin”
+
+==================================================
+
+连接数据库管理系统：
+  语法：一、  mysql  -h连接的计算机ip -p端口号  -u用户名 -p密码密码
+
+           mysql -hlocalhost -p3306 -uroot -proot
+           mysql -h127.0.0.1 -p3306 -uroot -proot
+
+        二、 mysql -u用户名 -p密码
+             mysql -uroot -proot
+
+密码安全：
+      mysql  -h连接的计算机ip -p端口号  -u用户名 -p   回车 输入密码
+
+      mysql  -u用户名 -p   回车 输入密码
+
+退出|注销：exit; | quit;
+
+
+显示所有的数据库：show databases;
+
+选择数据： use 数据库名;
+           use mysql;
+
+显示所有可能的表：show tables;
+
+显示表的所有列（显示表结构）：
+
+   show columns from 表名;
+         show columns from user;
+   desc 表名;
+       desc user;
+
+  显示更详细的信息：
+    show  full columns from 表名;
+         show  full columns from user;
+
+查询表内数据：select
+    select * from user;
+    select host,user,password from user;
+
+导入sql文件：
+
+   source C:\Users\weiyan\Desktop\MySQL\testdata\mysql_scripts\create.sql
+   source C:\Users\weiyan\Desktop\MySQL\testdata\mysql_scripts\populate.sql
+
+
+创建数据库：
+   create database 数据库名;
+    create database test01;
+ 
+    create database if not exists 数据库名;    if not exists:现象重名不报错   如果不存在就创建，存在不做操作
+
+  创建数据库时设置字符码：
+    create database 数据库名 charset 字符码;
+        create database test02 charset gbk;
+ 
+显示创建数据库的语句（可以显示数据库的字符码）：
+    show  create database 数据库名;    
+     show   create database test01;
+
+修改数据库的字符码：
+    alter database 数据库名 charset 字符码;
+    alter database test02 charset utf8;
+
+创建数据库：test1，test11，ceshi01，ceshi02；
+create database test1;
+create database test11;
+create database ceshi01;
+create database ceshi02;
+
+显示所有的数据库：
+     show databases;
+
+过滤显示：like  %：匹配任意个字符  _:匹配一个字符
+ 
+显示数据库名中包含‘es’的数据库
+    show databases like '%es%'; 
+
+显示以‘c’开头的数据库名；
+   show databases like 'c%';
+
+显示第三个字符为‘s’的数据库名;
+   show databases like '__s%';
+
+
+删除数据库：drop
+    drop database 数据库名;
+    drop database test1;
+  
+     drop database  if exists 数据库名;   if exists:如果存在就删除，不存在就不操作
+     drop database  if exists test11;
+
+
+选择某个数据库：
+    use 数据库名;
+    use testdb;
+
+显示所有可能的表：
+   show tables;
+
+过滤显示：like  %：匹配任意个字符  _:匹配一个字符
+显示以p开头的表；
+    show tables like 'p%';
+
+
+显示表结构：
+    desc 表名;
+       desc products;
+    show columns from 表名;
+      show columns from products;
+  显示更详细的信息：
+     show full columns from 表名; 
+     show full columns from products;
+
+
+查询表内数据：select 
+
+   所有列：
+       select * from 表名;
+       select * from products;
+   单列：
+       select 列名 from 表名;
+       select prod_price from products;
+   多列：
+       select 列名1,列名2,…,列名N from 表名;
+       select prod_name,prod_price from products;
+
+
+完全限定的表名，列名
+      select prod_name,prod_price from testdb.products; 
+      select testdb.products.prod_name,prod_price from testdb.products;  
+
+
+取别名：as  
+   列别名
+      select prod_name as 产品名,prod_price as 价格 from products;  
+         as可省
+      select prod_name 产品名,prod_price 价格 from products;
+
+    表别名   
+       select p.prod_name,prod_price from  products as p;  
+
+   
+     
